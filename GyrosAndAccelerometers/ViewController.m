@@ -43,14 +43,14 @@ NSNumber *zero;
 	// Do any additional setup after loading the view, typically from a nib.
     zero = [[NSNumber alloc]initWithDouble:0.0];
     
-    currentMaxAccelX = 0;
+    currentAccelX = 0;
     
-    currentMaxAccelY = 0;
-    currentMaxAccelZ = 0;
+    currentAccelY = 0;
+    currentAccelZ = 0;
     
-    currentMaxRotX = 0;
-    currentMaxRotY = 0;
-    currentMaxRotZ = 0;
+    currentRotX = 0;
+    currentRotY = 0;
+    currentRotZ = 0;
     
     self.motionManager = [[CMMotionManager alloc] init];
     self.motionManager.accelerometerUpdateInterval = .2;
@@ -88,32 +88,23 @@ NSNumber *zero;
 {
     
     self.accX.text = [NSString stringWithFormat:@" %.2fg",acceleration.x];
-    if(fabs(acceleration.x) > fabs(currentMaxAccelX))
-    {
-        currentMaxAccelX = acceleration.x;
-    }
+    currentAccelX = acceleration.x;
     self.accY.text = [NSString stringWithFormat:@" %.2fg",acceleration.y];
-    if(fabs(acceleration.y) > fabs(currentMaxAccelY))
-    {
-        currentMaxAccelY = acceleration.y;
-    }
+    currentAccelY = acceleration.y;
     self.accZ.text = [NSString stringWithFormat:@" %.2fg",acceleration.z];
-    if(fabs(acceleration.z) > fabs(currentMaxAccelZ))
-    {
-        currentMaxAccelZ = acceleration.z;
-    }
+    currentAccelZ = acceleration.z;
 
-    double deviation = [stats_calc get_euclidean_dist:previousMaxAccelX comma:previousMaxAccelY comma:previousMaxAccelZ with:currentMaxAccelX comma:currentMaxAccelY comma:currentMaxAccelZ];
-    NSLog(@"Accelerometer deviation: %f ", deviation);
+    double deviation = [stats_calc get_euclidean_dist:previousAccelX comma:previousAccelY comma:previousAccelZ with:currentAccelX comma:currentAccelY comma:currentRotZ];
+    //NSLog(@"Accelerometer deviation: %f ", deviation);
     NSNumber *tempNumber = [[NSNumber alloc] initWithDouble:deviation];
     deviation_data[@"acc"]  = [NSNumber numberWithFloat:([deviation_data[@"acc"] floatValue]+ [tempNumber floatValue])];
     
-    self.maxAccX.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelX];
-    self.maxAccY.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelY];
-    self.maxAccZ.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelZ];
-    previousMaxAccelX = currentMaxAccelX;
-    previousMaxAccelY = currentMaxAccelY;
-    previousMaxAccelZ = currentMaxAccelZ;
+    self.maxAccX.text = [NSString stringWithFormat:@" %.2f",currentAccelX];
+    self.maxAccY.text = [NSString stringWithFormat:@" %.2f",currentAccelY];
+    self.maxAccZ.text = [NSString stringWithFormat:@" %.2f",currentAccelZ];
+    previousAccelX = currentAccelX;
+    previousAccelY = currentAccelY;
+    previousAccelZ = currentAccelZ;
 
 }
 
@@ -128,8 +119,9 @@ NSNumber *zero;
     //NSString *user_id = deviation_data[@"user_id"];
     NSString *user_id = @"John";
     //NSDate *now = [NSDate date];
-    CFAbsoluteTime nowEpochSeconds = CFAbsoluteTimeGetCurrent();
-    NSString *epoch_time = [NSString stringWithFormat:@"%d",(int)nowEpochSeconds];
+    //CFAbsoluteTime nowEpochSeconds = CFAbsoluteTimeGetCurrent();
+    NSTimeInterval secondsSinceUnixEpoch = [[NSDate date]timeIntervalSince1970];
+    NSString *epoch_time = [NSString stringWithFormat:@"%ld",(long int)(secondsSinceUnixEpoch)];
                            
     NSDictionary *tmp = [[NSDictionary alloc] initWithObjectsAndKeys:
                          gyr, @"gyr",
@@ -140,7 +132,8 @@ NSNumber *zero;
     NSError *error;
     NSData *postdata = [NSJSONSerialization dataWithJSONObject:tmp options:NSJSONWritingPrettyPrinted error:&error];
     
-    NSString *url = @"http://192.168.95.32:5000/hotv/api/v1.0/metrics";
+    //NSString *url = @"http://192.168.95.32:5000/hotv/api/v1.0/metrics";
+    NSString *url = @"http://localhost:5000/hotv/api/v1.0/metrics";
     NSMutableURLRequest *request =
     [[NSMutableURLRequest alloc] initWithURL:
      [NSURL URLWithString:url]];
@@ -151,7 +144,7 @@ NSNumber *zero;
     /*
     [request setValue:[NSString
                        stringWithFormat:@"%d", (int)[postdata length]] forHTTPHeaderField:@"Content-length"];
-     */
+  */
     
     [request setHTTPBody:postdata];
     NSLog(@"Request: %@",request);
@@ -164,34 +157,29 @@ NSNumber *zero;
 {
     
     self.rotX.text = [NSString stringWithFormat:@" %.2fr/s",rotation.x];
-    if(fabs(rotation.x)> fabs(currentMaxRotX)) 
-    {
-        currentMaxRotX = rotation.x;
-    }
+    
+        currentRotX = rotation.x;
     self.rotY.text = [NSString stringWithFormat:@" %.2fr/s",rotation.y];
-    if(fabs(rotation.y) > fabs(currentMaxRotY))
-    {
-        currentMaxRotY = rotation.y;
-    }
+    
+        currentRotY = rotation.y;
+    
     self.rotZ.text = [NSString stringWithFormat:@" %.2fr/s",rotation.z];
-    if(fabs(rotation.z) > fabs(currentMaxRotZ))
-    {
-        currentMaxRotZ = rotation.z;
-    }
+        currentRotZ = rotation.z;
     
-    self.maxRotX.text = [NSString stringWithFormat:@" %.2f",currentMaxRotX];
-    self.maxRotY.text = [NSString stringWithFormat:@" %.2f",currentMaxRotY];
-    self.maxRotZ.text = [NSString stringWithFormat:@" %.2f",currentMaxRotZ];
+    
+    self.maxRotX.text = [NSString stringWithFormat:@" %.2f",currentRotX];
+    self.maxRotY.text = [NSString stringWithFormat:@" %.2f",currentRotY];
+    self.maxRotZ.text = [NSString stringWithFormat:@" %.2f",currentRotZ];
     
     
     
-    double deviation = [stats_calc get_euclidean_dist:previousMaxRotX comma:previousMaxRotY comma:previousMaxRotZ with:currentMaxRotX comma:currentMaxRotY comma:currentMaxRotZ];
-    NSLog(@"Accelerometer deviation: %f ", deviation);
+    double deviation = [stats_calc get_euclidean_dist:previousMaxRotX comma:previousMaxRotY comma:previousMaxRotZ with:currentRotX comma:currentRotY comma:currentRotZ];
+    //NSLog(@"Accelerometer deviation: %f ", deviation);
     NSNumber *tempNumber = [[NSNumber alloc] initWithDouble:deviation];
     deviation_data[@"gyr"]  = [NSNumber numberWithFloat:([deviation_data[@"gyr"] floatValue]+ [tempNumber floatValue])];
-    previousMaxRotX = currentMaxRotX;
-    previousMaxRotY = currentMaxRotY;
-    previousMaxRotZ = currentMaxRotZ;
+    previousMaxRotX = currentRotX;
+    previousMaxRotY = currentRotY;
+    previousMaxRotZ = currentRotZ;
 
 }
 
@@ -203,13 +191,13 @@ NSNumber *zero;
 
 - (IBAction)resetMaxValues:(id)sender {
     
-    currentMaxAccelX = 0;
-    currentMaxAccelY = 0;
-    currentMaxAccelZ = 0;
+    currentAccelX = 0;
+    currentAccelY = 0;
+    currentAccelZ = 0;
     
-    currentMaxRotX = 0;
-    currentMaxRotY = 0;
-    currentMaxRotZ = 0;
+    currentRotX = 0;
+    currentRotY = 0;
+    currentRotZ = 0;
     
 }
 

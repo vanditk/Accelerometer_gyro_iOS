@@ -28,18 +28,18 @@
 #import "VKStatistics.h"
 
 
-double currentMaxAccelX;
-double currentMaxAccelY;
-double currentMaxAccelZ;
-double currentMaxRotX;
-double currentMaxRotY;
-double currentMaxRotZ;
+double currentAccelX;
+double currentAccelY;
+double currentAccelZ;
+double currentRotX;
+double currentRotY;
+double currentRotZ;
 
 
 
-double previousMaxAccelX;
-double previousMaxAccelY;
-double previousMaxAccelZ;
+double previousAccelX;
+double previousAccelY;
+double previousAccelZ;
 double previousMaxRotX;
 double previousMaxRotY;
 double previousMaxRotZ;
